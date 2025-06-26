@@ -1,5 +1,7 @@
 <?php
 // edit-user.php
+// Jib l'user li bghiti tbdl
+
 require_once 'includes/auth.php';
 require_once 'config/database.php';
 requireRole('HR');
@@ -45,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ob_start();
 ?>
-<!-- Edit User content starts -->
+// lcontenu dyal edit user kaybda
+
 <h2>Edit User</h2>
 <?php if ($error): ?>
     <div style="background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; padding:1em; border-radius:4px; margin-bottom:1em; text-align:center;"> <?= htmlspecialchars($error) ?> </div>
@@ -66,6 +69,6 @@ ob_start();
     <button type="submit" style="background:#007bff; color:#fff; padding:0.5em 1.2em; border-radius:4px; border:none; font-size:1em;">Save Changes</button>
     <a href="manage-users.php" style="margin-left:1em; color:#007bff; text-decoration:none;">Cancel</a>
 </form>
-<!-- Edit User content ends -->
+// lcontenu dyal edit user tsala
 <?php $hr_main_content = ob_get_clean(); include 'hr-layout.php'; ?>
 <script>document.querySelector('.hr-main-section').innerHTML = `<?= str_replace('`', '\`', $hr_main_content) ?>`;</script> 

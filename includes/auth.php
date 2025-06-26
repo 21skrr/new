@@ -5,17 +5,17 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
-// Check if user is logged in
+// Tchecki wach user dakhil
 function isLoggedIn() {
     return isset($_SESSION['user_id']) && isset($_SESSION['user_role']);
 }
 
-// Check if user has required role
+// Tchecki wach user 3ando role li khas
 function hasRole($required_role) {
     return isLoggedIn() && $_SESSION['user_role'] === $required_role;
 }
 
-// Redirect if not logged in
+// Ila user ma dakhilch, rje3h l login
 function requireLogin() {
     if (!isLoggedIn()) {
         header('Location: login.php');
@@ -23,7 +23,7 @@ function requireLogin() {
     }
 }
 
-// Redirect if user doesn't have required role
+// Ila user ma 3andouch role li khas, rje3h l unauthorized
 function requireRole($required_role) {
     requireLogin();
     if (!hasRole($required_role)) {
@@ -32,7 +32,7 @@ function requireRole($required_role) {
     }
 }
 
-// Get current user info
+// Jib info dyal user li dakhil daba
 function getCurrentUser() {
     if (!isLoggedIn()) {
         return null;
@@ -46,13 +46,14 @@ function getCurrentUser() {
     ];
 }
 
-// Logout user
+// Log out user
 function logout() {
     session_destroy();
     header('Location: login.php');
     exit();
 }
 
+// Tchecki role b tari9a okhra
 function require_role($role) {
     if ($_SESSION['user']['role'] !== $role) {
         header('Location: unauthorized.php');

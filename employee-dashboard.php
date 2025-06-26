@@ -7,11 +7,13 @@ $user = $_SESSION['user'];
 $employee_page_title = 'Employee Dashboard';
 ob_start();
 // Fetch assigned surveys for this employee
+// Jib surveys li assigniw lik
 $stmt = $pdo->prepare("SELECT ass.*, st.title FROM assigned_surveys ass JOIN survey_templates st ON ass.template_id = st.id WHERE ass.employee_id = ? ORDER BY ass.assigned_at DESC");
 $stmt->execute([$user['id']]);
 $assigned_surveys = $stmt->fetchAll();
 ?>
-<!-- Dashboard content starts -->
+<!-- // lcontenu dyal dashboard kaybda-->
+
 <p>Welcome to your Employee Dashboard. Here you can answer assigned surveys and view your results.</p>
 <a href="view-employee-results.php" style="background:#28a745; color:#fff; padding:0.5em 1.2em; border-radius:4px; text-decoration:none; font-size:1em; margin-bottom:1.2em; display:inline-block;">My Results</a>
 <hr style="margin: 1.5em 0;">
@@ -48,6 +50,7 @@ $assigned_surveys = $stmt->fetchAll();
         <?php endif; ?>
     </tbody>
 </table>
-<!-- Dashboard content ends -->
+<!-- // lcontenu dyal dashboard tsala -->
+
 <?php $employee_main_content = ob_get_clean(); include 'employee-layout.php'; ?>
 <script>document.querySelector('.employee-main-section').innerHTML = `<?= str_replace('`', '\`', $employee_main_content) ?>`;</script>

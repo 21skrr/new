@@ -1,5 +1,7 @@
 <?php
-// Database configuration
+// config dyal database
+// hadchi bach nconnectiw m3a lbase dyal data
+
 define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'onboarding_surveys');
 define('DB_USER', 'root');
@@ -10,6 +12,6 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
+    die("Connection failed: " . $e->getMessage()); // ma9drnach nconnectiw
 }
 ?>

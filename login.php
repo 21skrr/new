@@ -79,37 +79,32 @@ $error = $_GET['error'] ?? '';
             outline: none;
         }
 
-        button {
+        button[type=submit] {
             width: 100%;
-            padding: 0.75rem;
             background: #007bff;
             color: #fff;
             border: none;
             border-radius: 6px;
-            font-size: 1rem;
+            padding: 0.8rem 0;
+            font-size: 1.1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: background 0.2s;
         }
 
-        button:hover {
+        button[type=submit]:hover {
             background: #0056b3;
-        }
-
-        button:focus {
-            outline: none;
-            background: #004da1;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h2>Welcome</h2>
+        <h2>Login</h2>
         <?php if ($error): ?>
             <div class="error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
-        <form action="process_login.php" method="post" autocomplete="off">
-            <input type="email" name="email" placeholder="Email address" required autofocus>
+        <form method="post" action="process_login.php">
+            <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>

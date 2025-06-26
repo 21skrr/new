@@ -9,7 +9,7 @@ $user_id = $_SESSION['user_id'];
 $success = false;
 $error = '';
 
-// Fetch assigned survey
+// Jib survey li assigniw lik
 $stmt = $pdo->prepare("SELECT ass.*, st.title, st.description, st.id as template_id, ass.status FROM assigned_surveys ass JOIN survey_templates st ON ass.template_id = st.id WHERE ass.id = ? AND ass.employee_id = ?");
 $stmt->execute([$assigned_id, $user_id]);
 $assigned = $stmt->fetch();
@@ -17,15 +17,17 @@ if (!$assigned) {
     die('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Answer Survey</title></head><body><div style="max-width:600px;margin:40px auto;background:#fff;padding:2rem 2.5rem;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-family:Arial,sans-serif;text-align:center;"><h2>Answer Survey</h2><div style="color:#721c24;background:#f8d7da;border:1px solid #f5c6cb;padding:1em;border-radius:4px;">Survey not found or not assigned to you.</div><a href="employee-dashboard.php" style="color:#007bff;">&larr; Back to Dashboard</a></div></body></html>');
 }
 
-// Fetch questions
+// Jib les questions
 $stmt = $pdo->prepare("SELECT * FROM survey_questions WHERE template_id = ?");
 $stmt->execute([$assigned['template_id']]);
 $questions = $stmt->fetchAll();
 
 // Check if already completed
+// Tchecki ila survey salli
 $is_completed = ($assigned['status'] === 'completed');
 
 // Handle form submission
+// T3amel m3a form dyal l'ijaba
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_completed) {
     $answers = $_POST['answer'] ?? [];
     $now = date('Y-m-d H:i:s');
@@ -39,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_completed) {
             }
         }
         // Mark as completed
-        $pdo->prepare("UPDATE assigned_surveys SET status = 'completed' WHERE id = ?")->execute([$assigned_id]);
+        $pdo->prepare("UPDATE assigned_surveys SET status = 'completed', completed_at = NOW() WHERE id = ?")->execute([$assigned_id]);
         $pdo->commit();
         $success = true;
         $is_completed = true;
@@ -48,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_completed) {
         $error = 'Error saving responses: ' . $e->getMessage();
     }
 }
-// Fetch previous answers if completed
+
+// Jib l'ijabat l9dama ila survey mkmla
 $prev_answers = [];
 if ($is_completed) {
     $stmt = $pdo->prepare("SELECT question_id, answer FROM survey_responses WHERE assigned_survey_id = ?");

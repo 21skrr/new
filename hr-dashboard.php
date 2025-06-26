@@ -6,6 +6,7 @@ $user = $_SESSION['user'];
 $hr_page_title = 'HR Dashboard';
 ob_start();
 // Organization stats
+// Statistique dyal lmo2assassa
 $stats = $pdo->query("
     SELECT 
         COUNT(CASE WHEN role = 'EMPLOYEE' THEN 1 END) as total_employees,
@@ -16,6 +17,7 @@ $stats = $pdo->query("
     FROM users
 ")->fetch();
 // Survey templates and assignment counts
+// Les templates dyal survey w ch7al men wa7ed assigniw lih
 $stmt = $pdo->query("SELECT st.*, (SELECT COUNT(*) FROM assigned_surveys ass WHERE ass.template_id = st.id) as assignments_count FROM survey_templates st ORDER BY st.created_at DESC");
 $templates = $stmt->fetchAll();
 ?>

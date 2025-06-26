@@ -7,7 +7,9 @@ if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'SUPERVISOR') {
     $user = $_SESSION['user'];
     $supervisor_page_title = 'Employee Results';
     $employee_id = isset($_GET['employee_id']) ? intval($_GET['employee_id']) : 0;
+    $assigned_survey_id = isset($_GET['assigned_survey_id']) ? intval($_GET['assigned_survey_id']) : 0;
     // Check if this employee is supervised by this supervisor
+    // Tchecki wach had lkhddam ta7t had supervisor
     $stmt = $pdo->prepare("SELECT u.id, u.full_name FROM users u JOIN assigned_surveys ass ON u.id = ass.employee_id WHERE u.id = ? AND ass.supervisor_id = ? LIMIT 1");
     $stmt->execute([$employee_id, $user['id']]);
     $employee = $stmt->fetch();
@@ -16,14 +18,23 @@ if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'SUPERVISOR') {
         exit;
     }
     // Fetch assigned surveys for this employee under this supervisor
-    $stmt = $pdo->prepare("SELECT ass.*, st.title as survey_title FROM assigned_surveys ass JOIN survey_templates st ON ass.template_id = st.id WHERE ass.employee_id = ? AND ass.supervisor_id = ? ORDER BY ass.assigned_at DESC");
-    $stmt->execute([$employee_id, $user['id']]);
+    // Jib surveys li assigniw lhad lkhddam m3a had supervisor
+    if ($assigned_survey_id) {
+        $stmt = $pdo->prepare("SELECT ass.*, st.title as survey_title FROM assigned_surveys ass JOIN survey_templates st ON ass.template_id = st.id WHERE ass.employee_id = ? AND ass.supervisor_id = ? AND ass.id = ? ORDER BY ass.assigned_at DESC");
+        $stmt->execute([$employee_id, $user['id'], $assigned_survey_id]);
+    } else {
+        $stmt = $pdo->prepare("SELECT ass.*, st.title as survey_title FROM assigned_surveys ass JOIN survey_templates st ON ass.template_id = st.id WHERE ass.employee_id = ? AND ass.supervisor_id = ? ORDER BY ass.assigned_at DESC");
+        $stmt->execute([$employee_id, $user['id']]);
+    }
     $assigned_surveys = $stmt->fetchAll();
 
     // Handle feedback form submission
+    // T3amel m3a form dyal feedback
     $feedback_success = false;
     $feedback_error = '';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['feedback_assigned_id'])) {
+    if (
+        $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['feedback_assigned_id'])
+    ) {
         $assigned_id = intval($_POST['feedback_assigned_id']);
         $score = isset($_POST['score']) ? intval($_POST['score']) : null;
         $comment = trim($_POST['comment'] ?? '');
@@ -40,14 +51,23 @@ if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'SUPERVISOR') {
                 $stmt->execute([$assigned_id, $user['id'], $score, $comment]);
             }
             $feedback_success = true;
+            // Redirect to same page without edit_feedback param
+            $redirect_url = "view-employee-results.php?employee_id=$employee_id";
+            if (isset($_GET['assigned_survey_id'])) {
+                $redirect_url .= "&assigned_survey_id=" . intval($_GET['assigned_survey_id']);
+            }
+            header("Location: $redirect_url&feedback_saved=1");
+            exit;
         } catch (Exception $e) {
             $feedback_error = 'Error saving feedback: ' . $e->getMessage();
         }
     }
+    $edit_feedback_id = isset($_GET['edit_feedback']) ? intval($_GET['edit_feedback']) : 0;
     ob_start();
     ?>
+    <a href="analyze-results.php" style="background:#007bff; color:#fff; padding:0.5em 1.2em; border-radius:4px; text-decoration:none; font-size:1em; margin-bottom:1.2em; display:inline-block;">&larr; Back to Team Survey Results</a>
     <h2>Survey Results for <?= htmlspecialchars($employee['full_name']) ?></h2>
-    <?php if ($feedback_success): ?>
+    <?php if ($feedback_success || isset($_GET['feedback_saved'])): ?>
         <div style="background:#d4edda; color:#155724; border:1px solid #c3e6cb; padding:1em; border-radius:4px; margin-bottom:1em; text-align:center;">Feedback saved successfully.</div>
     <?php elseif ($feedback_error): ?>
         <div style="background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; padding:1em; border-radius:4px; margin-bottom:1em; text-align:center;"> <?= htmlspecialchars($feedback_error) ?> </div>
@@ -75,6 +95,7 @@ if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'SUPERVISOR') {
                             <?php if ($survey['status'] === 'completed'): ?>
                                 <?php
                                 // Fetch answers for this assigned survey
+                                // Jib l'ijabat dyal had survey
                                 $stmt2 = $pdo->prepare("SELECT sq.question_text, sr.answer FROM survey_responses sr JOIN survey_questions sq ON sr.question_id = sq.id WHERE sr.assigned_survey_id = ?");
                                 $stmt2->execute([$survey['id']]);
                                 $answers = $stmt2->fetchAll();
@@ -96,16 +117,32 @@ if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'SUPERVISOR') {
                             <?php if ($survey['status'] === 'completed'): ?>
                                 <?php
                                 // Fetch existing feedback
-                                $stmt3 = $pdo->prepare("SELECT score, comment FROM supervisor_feedback WHERE assigned_survey_id = ? AND supervisor_id = ?");
+                                // Jib feedback l9dim
+                                $stmt3 = $pdo->prepare("SELECT id, score, comment FROM supervisor_feedback WHERE assigned_survey_id = ? AND supervisor_id = ?");
                                 $stmt3->execute([$survey['id'], $user['id']]);
                                 $feedback = $stmt3->fetch();
                                 ?>
-                                <form method="post" action="" style="margin:0;">
-                                    <input type="hidden" name="feedback_assigned_id" value="<?= $survey['id'] ?>">
-                                    <label>Score: <input type="number" name="score" min="0" max="100" value="<?= htmlspecialchars($feedback['score'] ?? '') ?>" style="width:60px;"></label><br>
-                                    <label>Comment:<br><textarea name="comment" rows="2" style="width:98%; resize:vertical;"><?= htmlspecialchars($feedback['comment'] ?? '') ?></textarea></label><br>
-                                    <button type="submit" style="margin-top:0.5em; background:#007bff; color:#fff; border:none; border-radius:4px; padding:0.3em 1em;">Save Feedback</button>
-                                </form>
+                                <?php if ($feedback): ?>
+                                    <?php if ($edit_feedback_id === (int)$survey['id']): ?>
+                                        <form method="post" action="?employee_id=<?= $employee_id ?>&assigned_survey_id=<?= $survey['id'] ?>&edit_feedback=<?= $survey['id'] ?>" style="margin:0;">
+                                            <input type="hidden" name="feedback_assigned_id" value="<?= $survey['id'] ?>">
+                                            <label>Score: <input type="number" name="score" min="0" max="100" value="<?= htmlspecialchars($feedback['score']) ?>" style="width:60px;"></label><br>
+                                            <label>Comment:<br><textarea name="comment" rows="2" style="width:98%; resize:vertical;"><?= htmlspecialchars($feedback['comment']) ?></textarea></label><br>
+                                            <button type="submit" style="margin-top:0.5em; background:#007bff; color:#fff; border:none; border-radius:4px; padding:0.3em 1em;">Save Feedback</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <div><b>Score:</b> <?= htmlspecialchars($feedback['score']) ?></div>
+                                        <div><b>Comment:</b> <?= nl2br(htmlspecialchars($feedback['comment'])) ?></div>
+                                        <a href="?employee_id=<?= $employee_id ?>&assigned_survey_id=<?= $survey['id'] ?>&edit_feedback=<?= $survey['id'] ?>" style="color:#007bff; text-decoration:underline; margin-top:0.5em; display:inline-block;">Edit</a>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <form method="post" action="?employee_id=<?= $employee_id ?>&assigned_survey_id=<?= $survey['id'] ?>" style="margin:0;">
+                                        <input type="hidden" name="feedback_assigned_id" value="<?= $survey['id'] ?>">
+                                        <label>Score: <input type="number" name="score" min="0" max="100" value="" style="width:60px;"></label><br>
+                                        <label>Comment:<br><textarea name="comment" rows="2" style="width:98%; resize:vertical;"></textarea></label><br>
+                                        <button type="submit" style="margin-top:0.5em; background:#007bff; color:#fff; border:none; border-radius:4px; padding:0.3em 1em;">Save Feedback</button>
+                                    </form>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <span style="color:#888;">-</span>
                             <?php endif; ?>
@@ -121,12 +158,14 @@ if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'SUPERVISOR') {
     exit;
 }
 // Default: employee viewing their own results
+// lkhddam kaychouf natija dyal rassou
 requireRole('EMPLOYEE');
 $user = $_SESSION['user'];
 $employee_page_title = 'My Results';
 $stmt = $pdo->prepare("SELECT ass.*, st.title as survey_title FROM assigned_surveys ass JOIN survey_templates st ON ass.template_id = st.id WHERE ass.employee_id = ? ORDER BY ass.assigned_at DESC");
 $stmt->execute([$user['id']]);
 $assigned_surveys = $stmt->fetchAll();
+$edit_feedback_id = isset($_GET['edit_feedback']) ? intval($_GET['edit_feedback']) : 0;
 ob_start();
 ?>
 <!-- My Results content starts -->
@@ -152,7 +191,8 @@ ob_start();
                     <td style="padding:0.5em; border-bottom:1px solid #eee;">
                         <?php if ($survey['status'] === 'completed'): ?>
                             <?php
-                            // Fetch supervisor feedback for this survey
+                            
+                            // Jib feedback dyal supervisor lhad survey
                             $stmt4 = $pdo->prepare("SELECT score, comment FROM supervisor_feedback WHERE assigned_survey_id = ?");
                             $stmt4->execute([$survey['id']]);
                             $feedback = $stmt4->fetch();

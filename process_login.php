@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_role'] = $user['role'];
         $_SESSION['user_name'] = $user['full_name'];
         $_SESSION['user_email'] = $user['email'];
-        // Redirect by role
+        // hna kayn lredirect 3la hsab role
         switch ($user['role']) {
             case 'EMPLOYEE':
                 header('Location: employee-dashboard.php');
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     } else {
-        header('Location: login.php?error=Invalid email or password');
+        header('Location: login.php?error=Invalid email or password'); // lma3loumat ghalat
         exit;
     }
 } else {

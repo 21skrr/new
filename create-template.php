@@ -1,10 +1,10 @@
 <?php
-// create-template.php
+// had lfile dyal create-template.php
 require_once 'includes/auth.php';
 require_once 'config/database.php';
 requireRole('HR');
 
-// Handle form submission
+// hadchi bach nhandlew form dyal l'ajout
 $success = false;
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -16,11 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($title && $description && count($question_texts) > 0) {
         try {
             $pdo->beginTransaction();
-            // Insert template
+            // ninsertiw template
             $stmt = $pdo->prepare("INSERT INTO survey_templates (title, description, created_by) VALUES (?, ?, ?)");
             $stmt->execute([$title, $description, $_SESSION['user_id']]);
             $template_id = $pdo->lastInsertId();
-            // Insert questions
+            // ninsertiw les questions
             for ($i = 0; $i < count($question_texts); $i++) {
                 $q_text = trim($question_texts[$i]);
                 $q_type = $question_types[$i];
@@ -32,10 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = true;
         } catch (Exception $e) {
             $pdo->rollBack();
-            $error = 'Error saving template: ' . $e->getMessage();
+            $error = 'Error saving template: ' . $e->getMessage(); // l'erreur f save
         }
     } else {
-        $error = 'Please fill in all required fields and add at least one question.';
+        $error = 'Please fill in all required fields and add at least one question.'; // khas t3mer kolchi
     }
 }
 ?>
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 1em; border-radius: 4px; margin-bottom: 1em; }
     </style>
     <script>
-    // Simple JS to add/remove questions dynamically (no backend yet)
+    // had script bach nzidou w n7iydou les questions (frontend only)
     function addQuestion() {
         const questionsDiv = document.getElementById('questions');
         const block = document.createElement('div');

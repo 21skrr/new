@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? '';
     if ($full_name && $email && $password && in_array($role, ['EMPLOYEE','SUPERVISOR','HR'])) {
-        // Check for duplicate email
+        // Tchecki wach kayn email m3awd
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
         $stmt->execute([$email]);
         if ($stmt->fetchColumn() > 0) {
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ob_start();
 ?>
-<!-- Add User content starts -->
+<!-- front kay bda -->
 <h2>Add New User</h2>
 <?php if ($error): ?>
     <div style="background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; padding:1em; border-radius:4px; margin-bottom:1em; text-align:center;"> <?= htmlspecialchars($error) ?> </div>

@@ -6,12 +6,14 @@ requireRole('SUPERVISOR');
 $user = $_SESSION['user'];
 $supervisor_page_title = 'Supervisor Dashboard';
 ob_start();
-// Fetch employees supervised by this supervisor and their survey stats
+
+// Jib lkhddam li ta7t had supervisor w statistique dyal survey dyalhom
 $stmt = $pdo->prepare("SELECT u.id, u.full_name, COUNT(ass.id) AS total_assigned, SUM(ass.status = 'completed') AS completed FROM users u JOIN assigned_surveys ass ON u.id = ass.employee_id WHERE u.role = 'EMPLOYEE' AND ass.supervisor_id = ? GROUP BY u.id, u.full_name HAVING total_assigned > 0 ORDER BY u.full_name");
 $stmt->execute([$user['id']]);
 $employees = $stmt->fetchAll();
 ?>
-<!-- Dashboard content starts -->
+<!-- // lcontenu dyal dashboard kaybda -->
+
 <p>Welcome to your Supervisor Dashboard. Here you can view your team's survey results.</p>
 <a href="analyze-results.php" style="background:#17a2b8; color:#fff; padding:0.5em 1.2em; border-radius:4px; text-decoration:none; font-size:1em; margin-bottom:1.2em; display:inline-block;">Analyze Team Results</a>
 <hr style="margin: 1.5em 0;">
@@ -44,6 +46,7 @@ $employees = $stmt->fetchAll();
         <?php endif; ?>
     </tbody>
 </table>
-<!-- Dashboard content ends -->
+<!-- //lcontenu dyal dashboard tsala -->
+
 <?php $supervisor_main_content = ob_get_clean(); include 'supervisor-layout.php'; ?>
 <script>document.querySelector('.supervisor-main-section').innerHTML = `<?= str_replace('`', '\`', $supervisor_main_content) ?>`;</script>

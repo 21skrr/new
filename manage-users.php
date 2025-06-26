@@ -6,12 +6,14 @@ requireRole('HR');
 $user = $_SESSION['user'];
 $hr_page_title = 'Manage Users';
 ob_start();
-// Fetch all users
+
+// Jib jami3 lusers
 $users = $pdo->query("SELECT id, full_name, email, role FROM users ORDER BY full_name")->fetchAll();
 $success = isset($_GET['success']) ? intval($_GET['success']) : 0;
 $error = isset($_GET['error']) ? $_GET['error'] : '';
 ?>
-<!-- Manage Users content starts -->
+<!-- // lcontenu dyal manage users kaybda -->
+
 <h2>Manage Users</h2>
 <?php if ($success == 1): ?>
     <div style="background:#d4edda; color:#155724; border:1px solid #c3e6cb; padding:1em; border-radius:4px; margin-bottom:1em; text-align:center;">User added successfully!</div>
@@ -51,6 +53,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
         <?php endif; ?>
     </tbody>
 </table>
-<!-- Manage Users content ends -->
+<!-- // lcontenu dyal manage users tsalaq -->
+
 <?php $hr_main_content = ob_get_clean(); include 'hr-layout.php'; ?>
 <script>document.querySelector('.hr-main-section').innerHTML = `<?= str_replace('`', '\`', $hr_main_content) ?>`;</script> 
